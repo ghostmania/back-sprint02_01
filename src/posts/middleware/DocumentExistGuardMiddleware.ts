@@ -10,7 +10,6 @@ export const DocumentExistGuardMiddleware = (
 ) => {
   const id = req.params.id + '';
 
-  // const index = db.posts.findIndex((v) => v.id === id);
   const doc = postsRepository.findById(id);
 
   if (!doc) {

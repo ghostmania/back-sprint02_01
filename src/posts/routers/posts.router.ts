@@ -13,7 +13,7 @@ export const postsRouter = Router({});
 postsRouter
   .get('', getPostsListHandler)
 
-  .get('/:id', getPostByIdHandler)
+  .get('/:id', DocumentExistGuardMiddleware, getPostByIdHandler)
   .post(
     '',
     superAdminGuardMiddleware,
@@ -23,9 +23,9 @@ postsRouter
 
   .put(
     '/:id',
+    DocumentExistGuardMiddleware,
     superAdminGuardMiddleware,
     PostHasValidFIeldsMiddleware,
-    DocumentExistGuardMiddleware,
     updatePostHandler,
   )
 
