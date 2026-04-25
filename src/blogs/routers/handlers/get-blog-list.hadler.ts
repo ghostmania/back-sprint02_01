@@ -1,7 +1,12 @@
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { db } from '../../../db/blogs.db';
 import { Request, Response } from 'express';
+import { blogsRepository } from '../../repositories/blogs.repository';
 
-export function getBlogsListHandler(req: Request, res: Response) {
-  res.status(HttpStatus.Ok).send(db.blogs);
+export async function getBlogsListHandler(req: Request, res: Response) {
+  try {
+    const blogs = await blogsRepository.findAll();
+    res.status(HttpStatus.Ok).send(blogs);
+  } catch (e: unknown) {
+    res.sendStatus(HttpStatus.InternalServerError);
+  }
 }

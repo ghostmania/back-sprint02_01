@@ -16,6 +16,7 @@ export async function createPostHandler(
       blogId: req.body.blogId,
       blogName: 'FIX',
       id: req.body.title,
+      createdAt: new Date().toString(),
     };
 
     const createdPost = await postsRepository.create(newDriver);

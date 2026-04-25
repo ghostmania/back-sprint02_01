@@ -1,23 +1,28 @@
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { createErrorMessages } from '../../../core/utils/error.utils';
-import { db } from '../../../db/blogs.db';
 import { Request, Response } from 'express';
+import { BlogInputDto } from '../../dto/blog.input-dto';
+import { blogsRepository } from '../../repositories/blogs.repository';
 
-export function updateBlogHandler(req: Request, res: Response) {
-  const id = req.params.id;
-  const index = db.blogs.findIndex((v) => v.id === id);
+export async function updateBlogHandler(
+  req: Request<{ id: string }, {}, BlogInputDto>,
+  res: Response,
+) {
+  try {
+    const id = req.params.id;
+    const blog = await blogsRepository.findById(id);
 
-  if (index === -1) {
-    res
-      .status(HttpStatus.NotFound)
-      .send(createErrorMessages([{ field: 'id', message: 'Blog not found' }]));
-    return;
+    if (!blog) {
+      res
+        .status(HttpStatus.NotFound)
+        .send(createErrorMessages([{ field: 'id', message: 'Blog not found' }]));
+      return;
+    }
+
+    await blogsRepository.update(id, req.body);
+
+    res.sendStatus(HttpStatus.NoContent);
+  } catch (e: unknown) {
+    res.sendStatus(HttpStatus.InternalServerError);
   }
-  const driver = db.blogs[index];
-
-  driver.name = req.body.name;
-  driver.description = req.body.description;
-  driver.websiteUrl = req.body.websiteUrl;
-
-  res.sendStatus(HttpStatus.NoContent);
 }
