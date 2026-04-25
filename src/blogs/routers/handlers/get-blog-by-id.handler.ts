@@ -2,6 +2,7 @@ import { HttpStatus } from '../../../core/types/http-statuses';
 import { createErrorMessages } from '../../../core/utils/error.utils';
 import { Request, Response } from 'express';
 import { blogsRepository } from '../../repositories/blogs.repository';
+import { mapToBlogViewModel } from '../../mappers/map-to-blog-view-model.util';
 
 export async function getBlogByIdHandler(
   req: Request<{ id: string }>,
@@ -14,11 +15,14 @@ export async function getBlogByIdHandler(
     if (!blog) {
       res
         .status(HttpStatus.NotFound)
-        .send(createErrorMessages([{ field: 'id', message: 'Blog not found' }]));
+        .send(
+          createErrorMessages([{ field: 'id', message: 'Blog not found' }]),
+        );
       return;
     }
 
-    res.status(HttpStatus.Ok).send(blog);
+    const blogViewModel = mapToBlogViewModel(blog);
+    res.status(HttpStatus.Ok).send(blogViewModel);
   } catch (e: unknown) {
     res.sendStatus(HttpStatus.InternalServerError);
   }

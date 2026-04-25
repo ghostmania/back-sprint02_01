@@ -16,6 +16,23 @@ describe('Auth test', () => {
     websiteUrl: 'https://homework-blog.dev',
   };
 
+  const expectPostShape = (post: {
+    id: string;
+    title: string;
+    shortDescription: string;
+    content: string;
+    blogId: string;
+    blogName: string;
+  }) => ({
+    id: post.id,
+    title: post.title,
+    shortDescription: post.shortDescription,
+    content: post.content,
+    blogId: post.blogId,
+    blogName: post.blogName,
+    createdAt: expect.any(String),
+  });
+
   const createBlog = async () => {
     const response = await request(app)
       .post('/blogs')
@@ -147,6 +164,7 @@ describe('Auth test', () => {
         content: 'Post content created to verify Homework 2 create case',
         blogId: blog.id,
         blogName: blog.name,
+        createdAt: expect.any(String),
       });
 
       const getResponse = await request(app)
@@ -212,14 +230,16 @@ describe('Auth test', () => {
         .get(`/posts/${post.id}`)
         .expect(HttpStatus.Ok);
 
-      expect(getResponse.body).toEqual({
-        id: post.id,
-        title: 'Updated post title',
-        shortDescription: 'Updated short description',
-        content: 'Updated content for homework post',
-        blogId: updatedBlog.body.id,
-        blogName: updatedBlog.body.name,
-      });
+      expect(getResponse.body).toEqual(
+        expectPostShape({
+          id: post.id,
+          title: 'Updated post title',
+          shortDescription: 'Updated short description',
+          content: 'Updated content for homework post',
+          blogId: updatedBlog.body.id,
+          blogName: updatedBlog.body.name,
+        }),
+      );
     });
 
     it('DELETE -> "/posts/:id": should delete post by id; status 204;', async () => {

@@ -3,7 +3,7 @@ import { HttpStatus } from '../../core/types/http-statuses';
 import { createErrorMessages } from '../../core/utils/error.utils';
 import { postInputDtoValidation } from '../validation/postInputDtoValidation';
 import { Request, Response } from 'express';
-import { db as db2 } from '../../db/blogs.db';
+import { blogsRepository } from '../../blogs/repositories/blogs.repository';
 
 export const PostHasValidFIeldsMiddleware = (
   req: Request,
@@ -18,7 +18,7 @@ export const PostHasValidFIeldsMiddleware = (
   }
 
   // validate blog exists and get data
-  const blog = db2.blogs.find((d) => d.id === req.body.blogId);
+  const blog = blogsRepository.findById(req.body.blogId);
   if (!blog) {
     res
       .status(HttpStatus.BadRequest)

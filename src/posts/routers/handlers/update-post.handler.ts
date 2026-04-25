@@ -1,17 +1,18 @@
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { createErrorMessages } from '../../../core/utils/error.utils';
 import { Request, Response } from 'express';
-import { postInputDtoValidation } from '../../validation/postInputDtoValidation';
-import { db } from '../../../db/posts.db';
-import { db as blogsDb } from '../../../db/blogs.db';
+import { postsRepository } from '../../repositories/posts.repository';
+import { blogsRepository } from '../../../blogs/repositories/blogs.repository';
 
-export function updatePostHandler(req: Request, res: Response) {
-  const id = req.params.id;
-  const index = db.posts.findIndex((v) => v.id === id);
+export async function updatePostHandler(req: Request, res: Response) {
+  const id = req.params.id + '';
+  // const index = db.posts.findIndex((v) => v.id === id);
 
-  const post = db.posts[index];
+  // const post = db.posts[index];
+  const post = await postsRepository.findById(id);
 
-  const blog = blogsDb.blogs.find((item) => item.id === req.body.blogId);
+  // const blog = blogsDb.blogs.find((item) => item.id === req.body.blogId);
+  const blog = blogsRepository.findById(req.body.blogId);
   if (!blog) {
     res
       .status(HttpStatus.BadRequest)
@@ -23,11 +24,12 @@ export function updatePostHandler(req: Request, res: Response) {
     return;
   }
 
-  post.title = req.body.title;
-  post.shortDescription = req.body.shortDescription;
-  post.content = req.body.content;
-  post.blogId = req.body.blogId;
-  post.blogName = blog.name;
+  await postsRepository.update(id, {
+    title: req.body.title,
+    shortDescription: req.body.shortDescription,
+    content: req.body.content,
+    blogId: req.body.blogId,
+  });
 
   res.sendStatus(HttpStatus.NoContent);
 }

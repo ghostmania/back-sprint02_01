@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
-import { db } from '../../db/posts.db';
 import { createErrorMessages } from '../../core/utils/error.utils';
 import { HttpStatus } from '../../core/types/http-statuses';
+import { postsRepository } from '../repositories/posts.repository';
 
 export const DocumentExistGuardMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
+  const id = req.params.id + '';
 
-  const index = db.posts.findIndex((v) => v.id === id);
+  // const index = db.posts.findIndex((v) => v.id === id);
+  const doc = postsRepository.findById(id);
 
-  if (index === -1) {
+  if (!doc) {
     res
       .status(HttpStatus.NotFound)
       .send(createErrorMessages([{ field: 'id', message: 'Post not found' }]));

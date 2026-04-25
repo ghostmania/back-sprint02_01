@@ -14,6 +14,20 @@ describe('Blogs API', () => {
     websiteUrl: 'https://code-notes.dev',
   };
 
+  const expectBlogShape = (blog: {
+    id: string;
+    name: string;
+    description: string;
+    websiteUrl: string;
+  }) => ({
+    id: blog.id,
+    name: blog.name,
+    description: blog.description,
+    websiteUrl: blog.websiteUrl,
+    isMembership: false,
+    createdAt: expect.any(String),
+  });
+
   const createBlog = async () => {
     const response = await request(app)
       .post('/blogs')
@@ -36,10 +50,12 @@ describe('Blogs API', () => {
       .expect(HttpStatus.Created);
 
     expect(response.body).toEqual({
-      id: '1',
+      id: expect.any(String),
       name: validBlogInput.name,
       description: validBlogInput.description,
       websiteUrl: validBlogInput.websiteUrl,
+      isMembership: false,
+      createdAt: expect.any(String),
     });
   });
 
@@ -180,10 +196,12 @@ describe('Blogs API', () => {
       .get(`/blogs/${createdBlog.id}`)
       .expect(HttpStatus.Ok);
 
-    expect(getResponse.body).toEqual({
-      id: createdBlog.id,
-      ...updatedBlog,
-    });
+    expect(getResponse.body).toEqual(
+      expectBlogShape({
+        id: createdBlog.id,
+        ...updatedBlog,
+      }),
+    );
   });
 
   it('should return 400 when update payload is invalid; PUT /blogs/:id', async () => {

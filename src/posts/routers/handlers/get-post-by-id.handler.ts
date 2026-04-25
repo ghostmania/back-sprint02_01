@@ -1,8 +1,8 @@
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { createErrorMessages } from '../../../core/utils/error.utils';
-import { db } from '../../../db/posts.db';
 import { Request, Response } from 'express';
 import { postsRepository } from '../../repositories/posts.repository';
+import { mapToPostViewModel } from '../../mappers/map-to-post-view-model.util';
 
 export async function getPostByIdHandler(req: Request, res: Response) {
   try {
@@ -19,8 +19,8 @@ export async function getPostByIdHandler(req: Request, res: Response) {
       return;
     }
 
-    // const driverViewModel = mapToDriverViewModel(post);
-    res.status(HttpStatus.Ok).send(post);
+    const postViewModel = mapToPostViewModel(post);
+    res.status(HttpStatus.Ok).send(postViewModel);
   } catch (e: unknown) {
     res.sendStatus(HttpStatus.InternalServerError);
   }

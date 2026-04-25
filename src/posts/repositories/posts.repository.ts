@@ -28,7 +28,6 @@ export const postsRepository = {
           shortDescription: dto.shortDescription,
           content: dto.content,
           blogId: dto.blogId,
-          // blogName: dto.email,
         },
       },
     );

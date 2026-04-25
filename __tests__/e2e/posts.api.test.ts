@@ -14,6 +14,23 @@ describe('Posts API', () => {
     websiteUrl: 'https://platform-notes.dev',
   };
 
+  const expectPostShape = (post: {
+    id: string;
+    title: string;
+    shortDescription: string;
+    content: string;
+    blogId: string;
+    blogName: string;
+  }) => ({
+    id: post.id,
+    title: post.title,
+    shortDescription: post.shortDescription,
+    content: post.content,
+    blogId: post.blogId,
+    blogName: post.blogName,
+    createdAt: expect.any(String),
+  });
+
   const createBlog = async () => {
     const response = await request(app)
       .post('/blogs')
@@ -59,12 +76,13 @@ describe('Posts API', () => {
       .expect(HttpStatus.Created);
 
     expect(response.body).toEqual({
-      id: '1',
+      id: expect.any(String),
       title: 'First post',
       shortDescription: 'Introductory backend post',
       content: 'A longer text about backend APIs',
       blogId: blog.id,
       blogName: blog.name,
+      createdAt: expect.any(String),
     });
   });
 
@@ -294,11 +312,13 @@ describe('Posts API', () => {
       .get(`/posts/${createdPost.id}`)
       .expect(HttpStatus.Ok);
 
-    expect(getResponse.body).toEqual({
-      id: createdPost.id,
-      ...updatedPost,
-      blogName: updatedBlog.body.name,
-    });
+    expect(getResponse.body).toEqual(
+      expectPostShape({
+        id: createdPost.id,
+        ...updatedPost,
+        blogName: updatedBlog.body.name,
+      }),
+    );
   });
 
   it('should return 400 when update payload is invalid; PUT /posts/:id', async () => {
