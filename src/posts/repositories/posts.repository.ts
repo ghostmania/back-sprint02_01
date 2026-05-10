@@ -9,6 +9,23 @@ export const postsRepository = {
     return postsCollection.find().toArray();
   },
 
+  async findMany(
+    queryDto: PostQueryInput,
+  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
+    const skip = (pageNumber - 1) * pageSize;
+    const [items, totalCount] = await Promise.all([
+      postsCollection
+        .find()
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(pageSize)
+        .toArray(),
+      postsCollection.countDocuments(),
+    ]);
+    return { items, totalCount };
+  },
+
   async findById(id: string): Promise<WithId<Omit<Post, 'id'>> | null> {
     return postsCollection.findOne({ _id: new ObjectId(id) });
   },

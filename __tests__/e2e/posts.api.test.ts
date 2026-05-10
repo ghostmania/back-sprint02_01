@@ -255,7 +255,7 @@ describe('Posts API', () => {
   it('should return all posts; GET /posts', async () => {
     const firstPost = await createPost();
     const blog = await createBlog();
-    const secondResponse = await request(app)
+    const secondPost = await request(app)
       .post('/posts')
       .set('Authorization', adminAuthHeader)
       .send({
@@ -264,11 +264,19 @@ describe('Posts API', () => {
         content: 'Another longer text about backend APIs',
         blogId: blog.id,
       })
-      .expect(HttpStatus.Created);
+      .expect(HttpStatus.Created)
+      .then((r) => r.body);
 
     const response = await request(app).get('/posts').expect(HttpStatus.Ok);
 
-    expect(response.body).toEqual([firstPost, secondResponse.body]);
+    expect(response.body.totalCount).toBe(2);
+    expect(response.body.page).toBe(1);
+    expect(response.body.pageSize).toBe(10);
+    expect(response.body.pagesCount).toBe(1);
+    expect(response.body.items).toHaveLength(2);
+    expect(response.body.items).toEqual(
+      expect.arrayContaining([firstPost, secondPost]),
+    );
   });
 
   it('should return post by id; GET /posts/:id', async () => {
@@ -420,7 +428,8 @@ describe('Posts API', () => {
 
     const listResponse = await request(app).get('/posts').expect(HttpStatus.Ok);
 
-    expect(listResponse.body).toEqual([]);
+    expect(listResponse.body.items).toEqual([]);
+    expect(listResponse.body.totalCount).toBe(0);
   });
 
   it('should return 404 when trying to delete non-existing post; DELETE /posts/:id', async () => {

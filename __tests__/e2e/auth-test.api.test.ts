@@ -212,7 +212,10 @@ describe('Auth test', () => {
 
       const response = await request(app).get('/posts').expect(HttpStatus.Ok);
 
-      expect(response.body).toEqual([first.post, secondResponse.body]);
+      expect(response.body.totalCount).toBe(2);
+      expect(response.body.items).toEqual(
+        expect.arrayContaining([first.post, secondResponse.body]),
+      );
     });
 
     it('PUT -> "/posts/:id": should update post by id; status 204;', async () => {

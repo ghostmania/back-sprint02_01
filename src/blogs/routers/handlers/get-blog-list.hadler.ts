@@ -4,7 +4,7 @@ import { matchedData } from 'express-validator';
 import { BlogQueryInput } from '../input/blog-query.input';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
 import { blogsService } from '../../application/blogs.service';
-import { mapToBlogViewModel } from '../../mappers/map-to-blog-view-model.util';
+import { mapToBlogListPaginatedOutput } from '../mappers/map-to-blog-list-paginated-output.util';
 
 export async function getBlogsListHandler(req: Request, res: Response) {
   try {
@@ -13,10 +13,15 @@ export async function getBlogsListHandler(req: Request, res: Response) {
       includeOptionals: true,
     });
     const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+    const { items, totalCount } = await blogsService.findMany(queryInput);
 
-    const { items } = await blogsService.findMany(queryInput);
-
-    res.send(items.map(mapToBlogViewModel));
+    res.send(
+      mapToBlogListPaginatedOutput(items, {
+        pageNumber: queryInput.pageNumber,
+        pageSize: queryInput.pageSize,
+        totalCount,
+      }),
+    );
   } catch (e: unknown) {
     res.sendStatus(HttpStatus.InternalServerError);
   }

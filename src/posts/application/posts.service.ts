@@ -53,6 +53,12 @@ export const postsService = {
   async findAll(): Promise<WithId<Omit<Post, 'id'>>[]> {
     return postsRepository.findAll();
   },
+
+  async findMany(
+    queryDto: PostQueryInput,
+  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+    return postsRepository.findMany(queryDto);
+  },
   async findPostsForBlog(
     queryDto: PostQueryInput,
     blogId: string,

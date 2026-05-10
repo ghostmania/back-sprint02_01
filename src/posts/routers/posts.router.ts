@@ -7,11 +7,19 @@ import { deletePostHandler } from './handlers/delete-post.handler';
 import { superAdminGuardMiddleware } from '../../auth/admin.guard-middleware';
 import { DocumentExistGuardMiddleware } from '../middleware/DocumentExistGuardMiddleware';
 import { PostHasValidFIeldsMiddleware } from '../middleware/PostHasValidFieldsMiddleware';
+import { paginationAndSortingValidation } from '../../core/middleware/validation/query-pagination-sorting.validation-middleware';
+import { PostSortField } from './input/post-sort-field';
+import { inputValidationResultMiddleware } from '../../core/middleware/validation/input-validtion-result.middleware';
 
 export const postsRouter = Router({});
 
 postsRouter
-  .get('', getPostsListHandler)
+  .get(
+    '',
+    paginationAndSortingValidation(PostSortField),
+    inputValidationResultMiddleware,
+    getPostsListHandler,
+  )
 
   .get('/:id', DocumentExistGuardMiddleware, getPostByIdHandler)
   .post(

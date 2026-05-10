@@ -151,7 +151,7 @@ describe('Blogs API', () => {
 
   it('should return all blogs; GET /blogs', async () => {
     const firstBlog = await createBlog();
-    const secondResponse = await request(app)
+    const secondBlog = await request(app)
       .post('/blogs')
       .set('Authorization', adminAuthHeader)
       .send({
@@ -159,13 +159,18 @@ describe('Blogs API', () => {
         description: 'DevOps updates and notes',
         websiteUrl: 'https://ops-weekly.dev',
       })
-      .expect(HttpStatus.Created);
+      .expect(HttpStatus.Created)
+      .then((r) => r.body);
 
     const response = await request(app).get('/blogs').expect(HttpStatus.Ok);
 
-    expect(response.body).toHaveLength(2);
-    expect(response.body).toEqual(
-      expect.arrayContaining([firstBlog, secondResponse.body]),
+    expect(response.body.totalCount).toBe(2);
+    expect(response.body.page).toBe(1);
+    expect(response.body.pageSize).toBe(10);
+    expect(response.body.pagesCount).toBe(1);
+    expect(response.body.items).toHaveLength(2);
+    expect(response.body.items).toEqual(
+      expect.arrayContaining([firstBlog, secondBlog]),
     );
   });
 
@@ -305,7 +310,8 @@ describe('Blogs API', () => {
 
     const listResponse = await request(app).get('/blogs').expect(HttpStatus.Ok);
 
-    expect(listResponse.body).toEqual([]);
+    expect(listResponse.body.items).toEqual([]);
+    expect(listResponse.body.totalCount).toBe(0);
   });
 
   it('should return 404 when trying to delete non-existing blog; DELETE /blogs/:id', async () => {

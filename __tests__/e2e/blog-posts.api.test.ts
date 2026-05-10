@@ -66,13 +66,11 @@ describe('Blog Posts API', () => {
         .expect(HttpStatus.Ok);
 
       expect(response.body).toEqual({
-        meta: {
-          page: 1,
-          pageSize: 10,
-          pageCount: 0,
-          totalCount: 0,
-        },
-        data: [],
+        pagesCount: 0,
+        page: 1,
+        pageSize: 10,
+        totalCount: 0,
+        items: [],
       });
     });
 
@@ -85,24 +83,19 @@ describe('Blog Posts API', () => {
         .get(`/blogs/${blog.id}/posts`)
         .expect(HttpStatus.Ok);
 
-      expect(response.body.meta).toEqual({
-        page: 1,
-        pageSize: 10,
-        pageCount: 1,
-        totalCount: 2,
-      });
-      expect(response.body.data).toHaveLength(2);
-      expect(response.body.data[0]).toEqual({
-        type: 'posts',
+      expect(response.body.pagesCount).toBe(1);
+      expect(response.body.page).toBe(1);
+      expect(response.body.pageSize).toBe(10);
+      expect(response.body.totalCount).toBe(2);
+      expect(response.body.items).toHaveLength(2);
+      expect(response.body.items[0]).toEqual({
         id: expect.any(String),
-        attributes: {
-          title: validPostBody.title,
-          shortDescription: validPostBody.shortDescription,
-          content: validPostBody.content,
-          blogId: blog.id,
-          blogName: blog.name,
-          createdAt: expect.any(String),
-        },
+        title: validPostBody.title,
+        shortDescription: validPostBody.shortDescription,
+        content: validPostBody.content,
+        blogId: blog.id,
+        blogName: blog.name,
+        createdAt: expect.any(String),
       });
     });
 
@@ -122,8 +115,8 @@ describe('Blog Posts API', () => {
         .get(`/blogs/${blogA.id}/posts`)
         .expect(HttpStatus.Ok);
 
-      expect(response.body.meta.totalCount).toBe(1);
-      expect(response.body.data[0].attributes.blogId).toBe(blogA.id);
+      expect(response.body.totalCount).toBe(1);
+      expect(response.body.items[0].blogId).toBe(blogA.id);
     });
 
     it('should respect pageSize pagination param', async () => {
@@ -136,13 +129,11 @@ describe('Blog Posts API', () => {
         .get(`/blogs/${blog.id}/posts?pageSize=2&pageNumber=1`)
         .expect(HttpStatus.Ok);
 
-      expect(response.body.meta).toEqual({
-        page: 1,
-        pageSize: 2,
-        pageCount: 2,
-        totalCount: 3,
-      });
-      expect(response.body.data).toHaveLength(2);
+      expect(response.body.pagesCount).toBe(2);
+      expect(response.body.page).toBe(1);
+      expect(response.body.pageSize).toBe(2);
+      expect(response.body.totalCount).toBe(3);
+      expect(response.body.items).toHaveLength(2);
     });
 
     it('should return 404 when blog does not exist', async () => {
@@ -205,12 +196,28 @@ describe('Blog Posts API', () => {
         .get(`/blogs/${blog.id}/posts`)
         .expect(HttpStatus.Ok);
 
-      expect(response.body.meta.totalCount).toBe(1);
-      expect(response.body.data[0]).toMatchObject({
-        type: 'posts',
+      expect(response.body.totalCount).toBe(1);
+      expect(response.body.items[0]).toMatchObject({
         id: createdPost.id,
-        attributes: expect.objectContaining({ title: createdPost.title }),
+        title: createdPost.title,
       });
+    });
+
+    it('should return 400 when post body is invalid; POST /blogs/:id/posts', async () => {
+      const blog = await createBlog();
+
+      const response = await request(app)
+        .post(`/blogs/${blog.id}/posts`)
+        .set('Authorization', adminAuthHeader)
+        .send({ title: 'a'.repeat(31), content: 'valid content' })
+        .expect(HttpStatus.BadRequest);
+
+      expect(response.body.errorsMessages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'title' }),
+          expect.objectContaining({ field: 'shortDescription' }),
+        ]),
+      );
     });
 
     it('should return 401 without admin authorization', async () => {
