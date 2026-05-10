@@ -10,6 +10,6 @@ export function mapToPostViewModel(post: WithId<Omit<Post, 'id'>>): PostViewMode
     content: post.content,
     blogId: post.blogId,
     blogName: post.blogName,
-    createdAt: post.createdAt,
+    createdAt: post.createdAt.toISOString(),
   };
 }

@@ -1,7 +1,7 @@
 import { postsCollection } from '../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { Post } from '../types/post';
-import { PostInputDto } from '../dto/post.input-dto';
+import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 
 export const postsRepository = {
   async findAll(): Promise<WithId<Omit<Post, 'id'>>[]> {
@@ -12,12 +12,20 @@ export const postsRepository = {
     return postsCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  async create(newPost: Omit<Post, 'id'>): Promise<WithId<Omit<Post, 'id'>>> {
-    const insertResult = await postsCollection.insertOne(newPost);
-    return { ...newPost, _id: insertResult.insertedId };
+  async findByIdOrFail(id: string): Promise<WithId<Omit<Post, 'id'>>> {
+    const res = await postsCollection.findOne({ _id: new ObjectId(id) });
+    if (!res) {
+      throw new RepositoryNotFoundError('Post not exist');
+    }
+    return res;
   },
 
-  async update(id: string, dto: PostInputDto): Promise<void> {
+  async create(newPost: Omit<Post, 'id'>): Promise<string> {
+    const insertResult = await postsCollection.insertOne(newPost);
+    return insertResult.insertedId.toString();
+  },
+
+  async update(id: string, dto: Omit<Post, 'id' | 'createdAt'>): Promise<void> {
     const updateResult = await postsCollection.updateOne(
       {
         _id: new ObjectId(id),
