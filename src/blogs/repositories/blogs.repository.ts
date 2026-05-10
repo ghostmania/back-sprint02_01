@@ -3,6 +3,7 @@ import { blogsCollection } from '../../db/mongo.db';
 import { BlogInputDto } from '../dto/blog.input-dto';
 import { Blog } from '../types/blog';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { BlogQueryInput } from '../routers/input/blog-query.input';
 
 export const blogsRepository = {
   async findAll(): Promise<WithId<Omit<Blog, 'id'>>[]> {
@@ -24,7 +25,6 @@ export const blogsRepository = {
 
   async create(newBlog: Blog): Promise<string> {
     const insertResult = await blogsCollection.insertOne(newBlog);
-    // return { ...newBlog, _id: insertResult.insertedId };
     return insertResult.insertedId.toString();
   },
 
@@ -55,5 +55,29 @@ export const blogsRepository = {
     if (deleteResult.deletedCount < 1) {
       throw new Error('Blog not exist');
     }
+  },
+  async findMany(
+    queryDto: BlogQueryInput,
+  ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
+    const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } =
+      queryDto;
+
+    const skip = (pageNumber - 1) * pageSize;
+    const filter: any = {};
+
+    if (searchNameTerm) {
+      filter.name = { $regex: searchNameTerm, $options: 'i' };
+    }
+
+    const items = await blogsCollection
+      .find(filter)
+      .sort({ [sortBy]: sortDirection })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
+
+    const totalCount = await blogsCollection.countDocuments(filter);
+
+    return { items, totalCount };
   },
 };
