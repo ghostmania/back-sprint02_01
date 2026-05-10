@@ -2,6 +2,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { blogsCollection } from '../../db/mongo.db';
 import { BlogInputDto } from '../dto/blog.input-dto';
 import { Blog } from '../types/blog';
+import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 
 export const blogsRepository = {
   async findAll(): Promise<WithId<Omit<Blog, 'id'>>[]> {
@@ -12,9 +13,19 @@ export const blogsRepository = {
     return blogsCollection.findOne({ _id: new ObjectId(id) });
   },
 
-  async create(newBlog: Omit<Blog, 'id'>): Promise<WithId<Omit<Blog, 'id'>>> {
+  async findByIdOrFail(id: string): Promise<WithId<Blog>> {
+    const res = await blogsCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!res) {
+      throw new RepositoryNotFoundError('Blog not exist');
+    }
+    return res;
+  },
+
+  async create(newBlog: Blog): Promise<string> {
     const insertResult = await blogsCollection.insertOne(newBlog);
-    return { ...newBlog, _id: insertResult.insertedId };
+    // return { ...newBlog, _id: insertResult.insertedId };
+    return insertResult.insertedId.toString();
   },
 
   async update(id: string, dto: BlogInputDto): Promise<void> {
