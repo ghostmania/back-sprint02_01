@@ -6,6 +6,12 @@ import { updateBlogHandler } from './handlers/update-blog.handler';
 import { deleteBlogHandler } from './handlers/delete-blog.handler';
 import { superAdminGuardMiddleware } from '../../auth/admin.guard-middleware';
 import { BlogHasValidFIeldsMiddleware } from '../../posts/middleware/BlogHasValidFIeldsMW';
+import { idValidation } from '../../core/middleware/validation/params-id.validation-middleware';
+import { paginationAndSortingValidation } from '../../core/middleware/validation/query-pagination-sorting.validation-middleware';
+import { BlogSortField } from './input/blog-sort-field';
+import { inputValidationResultMiddleware } from '../../core/middleware/validation/input-validtion-result.middleware';
+import { getBlogPostListHandler } from './handlers/get-blog-post-list.handler';
+import { createBlogForPostHandler } from './handlers/create-blog-post.handler';
 
 export const blogsRouter = Router({});
 
@@ -27,4 +33,18 @@ blogsRouter
     updateBlogHandler,
   )
 
-  .delete('/:id', superAdminGuardMiddleware, deleteBlogHandler);
+  .delete('/:id', superAdminGuardMiddleware, deleteBlogHandler)
+  .get(
+    '/:id/posts',
+    idValidation,
+    paginationAndSortingValidation(BlogSortField),
+    inputValidationResultMiddleware,
+    getBlogPostListHandler,
+  )
+  .post(
+    '/:id/posts',
+    superAdminGuardMiddleware,
+    idValidation,
+    inputValidationResultMiddleware,
+    createBlogForPostHandler,
+  );

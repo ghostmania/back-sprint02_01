@@ -2,6 +2,7 @@ import { postsCollection } from '../../db/mongo.db';
 import { ObjectId, WithId } from 'mongodb';
 import { Post } from '../types/post';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { PostQueryInput } from '../routers/input/post-query.input';
 
 export const postsRepository = {
   async findAll(): Promise<WithId<Omit<Post, 'id'>>[]> {
@@ -56,5 +57,24 @@ export const postsRepository = {
       throw new Error('Post not exist');
     }
     return;
+  },
+  async findPostsForBlog(
+    queryDto: PostQueryInput,
+    driverId: string,
+  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
+    const filter = { blogId: driverId };
+    const skip = (pageNumber - 1) * pageSize;
+
+    const [items, totalCount] = await Promise.all([
+      postsCollection
+        .find(filter)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(pageSize)
+        .toArray(),
+      postsCollection.countDocuments(filter),
+    ]);
+    return { items, totalCount };
   },
 };

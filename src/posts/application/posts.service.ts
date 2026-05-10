@@ -5,13 +5,11 @@ import { blogsRepository } from '../../blogs/repositories/blogs.repository';
 import { Post } from '../types/post';
 import { DomainError } from '../../core/errors/domain.error';
 import { HttpStatus } from '../../core/types/http-statuses';
+import { PostQueryInput } from '../routers/input/post-query.input';
 
 export const postsService = {
   async createPost(dto: PostInputDto): Promise<string> {
-    const blog = await blogsRepository.findById(dto.blogId);
-    if (!blog) {
-      throw new DomainError('Blog not found', HttpStatus.BadRequest);
-    }
+    const blog = await blogsRepository.findByIdOrFail(dto.blogId);
 
     const newPost: Omit<Post, 'id'> = {
       title: dto.title,
@@ -54,5 +52,13 @@ export const postsService = {
 
   async findAll(): Promise<WithId<Omit<Post, 'id'>>[]> {
     return postsRepository.findAll();
+  },
+  async findPostsForBlog(
+    queryDto: PostQueryInput,
+    blogId: string,
+  ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+    await blogsRepository.findByIdOrFail(blogId);
+
+    return postsRepository.findPostsForBlog(queryDto, blogId);
   },
 };
