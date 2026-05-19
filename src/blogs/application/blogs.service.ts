@@ -15,7 +15,6 @@ export const blogsService = {
       isMembership: false,
       createdAt: new Date(),
     };
-    console.log(newBlog);
     return await blogsRepository.create(newBlog);
   },
   async findByIdOrFail(id: string): Promise<WithId<Blog>> {
