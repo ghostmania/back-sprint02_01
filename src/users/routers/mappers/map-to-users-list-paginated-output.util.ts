@@ -11,6 +11,6 @@ export function mapToUserListPaginatedOutput(
     page: meta.pageNumber,
     pageSize: meta.pageSize,
     totalCount: meta.totalCount,
-    users: users.map(mapToUserViewModel),
+    items: users.map(mapToUserViewModel),
   };
 }

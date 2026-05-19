@@ -26,8 +26,18 @@ describe('Users + Auth flow', () => {
     email: 'jane.doe@example.com',
   };
 
-  let createdUser: { id: string; login: string; email: string; createdAt: string };
-  let secondUser: { id: string; login: string; email: string; createdAt: string };
+  let createdUser: {
+    id: string;
+    login: string;
+    email: string;
+    createdAt: string;
+  };
+  let secondUser: {
+    id: string;
+    login: string;
+    email: string;
+    createdAt: string;
+  };
 
   beforeAll(async () => {
     await runDB(SETTINGS.MONGO_URL);
@@ -58,7 +68,7 @@ describe('Users + Auth flow', () => {
     createdUser = createResponse.body;
 
     const listResponse = await request(app).get('/users').expect(HttpStatus.Ok);
-    expect(listResponse.body.users).toEqual(
+    expect(listResponse.body.items).toEqual(
       expect.arrayContaining([createdUser]),
     );
   });
@@ -79,9 +89,9 @@ describe('Users + Auth flow', () => {
       page: 1,
       pageSize: 10,
       totalCount: 2,
-      users: expect.arrayContaining([createdUser, secondUser]),
+      items: expect.arrayContaining([createdUser, secondUser]),
     });
-    expect(listResponse.body.users).toHaveLength(2);
+    expect(listResponse.body.items).toHaveLength(2);
   });
 
   it('DELETE -> "/users/:id": should delete user by id; status 204; used additional methods: POST -> /users, GET -> /users', async () => {
@@ -97,7 +107,7 @@ describe('Users + Auth flow', () => {
 
     const listResponse = await request(app).get('/users').expect(HttpStatus.Ok);
     expect(listResponse.body.totalCount).toBe(0);
-    expect(listResponse.body.users).toEqual([]);
+    expect(listResponse.body.items).toEqual([]);
   });
 
   it('POST -> "/users": should create new user; status 201; content: created user; used additional methods: GET => /users', async () => {
@@ -118,7 +128,7 @@ describe('Users + Auth flow', () => {
 
     const listResponse = await request(app).get('/users').expect(HttpStatus.Ok);
     expect(listResponse.body.totalCount).toBe(1);
-    expect(listResponse.body.users).toEqual([createdUser]);
+    expect(listResponse.body.items).toEqual([createdUser]);
   });
 
   it('POST -> "/auth/login": should sign in user; status 204', async () => {
