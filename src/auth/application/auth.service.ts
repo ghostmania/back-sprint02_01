@@ -1,9 +1,11 @@
 import { LoginAttributes } from '../dto/login.attributes';
-import { authRepository } from '../repositories/auth.repository';
+import { usersRepository } from '../../users/repositories/users.repository';
+import { bcryptService } from '../adapters/bcrypt.service';
 
 export const authService = {
-  async login(dto: LoginAttributes) {
-    return await authRepository.login(dto);
+  async login(dto: LoginAttributes): Promise<boolean> {
+    const user = await usersRepository.findByLoginOrEmail(dto.loginOrEmail);
+    if (!user) return false;
+    return bcryptService.compare(dto.password, user.passwordHash);
   },
-  async checkUserExists(dto: LoginAttributes) {},
 };
