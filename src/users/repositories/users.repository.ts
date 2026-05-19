@@ -41,7 +41,12 @@ export const usersRepository = {
     });
 
     if (deleteResult.deletedCount < 1) {
-      throw new Error('Blog not exist');
+      throw new Error('User does not exist');
     }
+  },
+  async findByLoginOrEmail(loginOrEmail: string): Promise<WithId<User> | null> {
+    return usersCollection.findOne({
+      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
+    });
   },
 };

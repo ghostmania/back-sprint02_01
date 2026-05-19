@@ -5,4 +5,5 @@ export const authService = {
   async login(dto: LoginAttributes) {
     return await authRepository.login(dto);
   },
+  async checkUserExists(dto: LoginAttributes) {},
 };
